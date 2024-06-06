@@ -1,0 +1,11 @@
+
+#source /cvmfs/sft.cern.ch/lcg/views/LCG_104/x86_64-el9-gcc11-opt/setup.sh
+
+
+export LD_LIBRARY_PATH=$PWD:$PWD/src:$LD_LIBRARY_PATH
+
+
+export PYTHONPATH=$PWD/src:$PWD/tests:$PYTHONPATH
+
+export PATH=$PWD/src:$PWD/tests:$PATH
+
