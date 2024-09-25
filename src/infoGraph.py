@@ -55,8 +55,6 @@ class InfoView:
             self.fetching_info['file_id_code']  = '0'
             self.fetching_info['file_id_type']  = 'NONE'
 
-        self.info_dictionary = {}
-        #        self.update_info_dictionary()
 
 
     def __str__(self):
@@ -64,49 +62,50 @@ class InfoView:
 
 
     ################################################
-    # info_dictionary
+    # info_dictionary -> is NOW a transient variable!!
 
     # Note if the statements inside update_info() are kept in the __init__(),
     # any assignment to self.algorithm is *NOT* propagated to the dictionary, since
     # the variable referenced by self.algorithm is changed (i.e. a new one is instantiated
     # and the old one "NONE" remains alive since it is referenced by self.info_dictionary["algorithm"]
     
-    def update_info_dictionary(self):
-        self.info_dictionary.clear()
-        self.info_dictionary["view"]              = self.view
-        self.info_dictionary["algorithm"]         = self.algorithm
-        self.info_dictionary["origins"]           = self.origins
-        self.info_dictionary["requirements"]      = self.requirements
-        self.info_dictionary["status"]            = self.status
-        self.info_dictionary["id_code"]           = self.id_code
+
+    def get_info_dictionary(self):
+
+        info_dictionary                      = {}
+        info_dictionary["view"]              = self.view
+        info_dictionary["algorithm"]         = self.algorithm
+        info_dictionary["origins"]           = self.origins
+        info_dictionary["requirements"]      = self.requirements
+        info_dictionary["status"]            = self.status
+        info_dictionary["id_code"]           = self.id_code
 
         if self.has_fetching_info:
-            self.info_dictionary["fetching_info"] = self.fetching_info
+            info_dictionary["fetching_info"] = self.fetching_info
+
+        return info_dictionary
 
 
-    def configure_from_info_dictionary(self, infoDict = {}):
+    def configure_from_info_dictionary(self, info_dictionary = {}):
 
-        id = infoDict if (len(infoDict) > 0) else self.info_dictionary
+        if (len(info_dictionary) == 0):
+            print("ERROR: info_dictionary is empty!!! ")
+            return
 
-        self.view          = id["view"]
-        self.algorithm     = id["algorithm"]
-        self.origins       = id["origins"]
-        self.requirements  = id["requirements"]
-        self.status        = id["status"]
-        self.id_code       = id["id_code"]
+        self.view          = info_dictionary["view"]
+        self.algorithm     = info_dictionary["algorithm"]
+        self.origins       = info_dictionary["origins"]
+        self.requirements  = info_dictionary["requirements"]
+        self.status        = info_dictionary["status"]
+        self.id_code       = info_dictionary["id_code"]
 
         self.has_fetching_info = False
-        if "fetching_info" in id:
+        if "fetching_info" in info_dictionary:
             self.has_fetching_info = True
-            self.fetching_info = id["fetching_info"]
+            self.fetching_info     = info_dictionary["fetching_info"]
 
         return
             
-
-    # Defined below ...
-    #    def get_info_dictionary(self):
-    #        self.update_info_dictionary()
-    #        return self.info_dictionary
 
 
 
@@ -114,19 +113,19 @@ class InfoView:
     # Save & Load
 
     def save_to_file(self, fileName = "view.json"):
-        self.update_info_dictionary()
+        info_dictionary = self.get_info_dictionary();
         with open(fileName, "w") as file:
-            json.dump(self.info_dictionary, file)
+            json.dump(info_dictionary, file)
         return
 
 
     def load_from_file(self, dbFileName):
-        self.info_dictionary.clear()
+        info_dictionary = {}
         with open(dbFileName) as file:
-            self.info_dictionary = json.load(file)
+            info_dictionary = json.load(file)
         print("** View loaded from file ", dbFileName)
 
-        self.configure_from_info_dictionary()
+        self.configure_from_info_dictionary(info_dictionary)
         
         self.print_view()
 
@@ -189,23 +188,19 @@ class InfoView:
     ################################################
     # Access
 
-    def get_info_dictionary(self):
-        self.update_info_dictionary()
-        return self.info_dictionary
-
-
     def get_sources(self):
         return self.origins + self.requirements
+
 
 
     ################################################
     # Tools for printing
 
     def print_view(self):
-        self.update_info_dictionary()
-        print(self.info_dictionary)
-        for v in self.info_dictionary:
-            print(v.ljust(20), "  :  ", self.info_dictionary[v])
+        info_dictionary = get_info_dictionary()
+        print(info_dictionary)
+        for v in info_dictionary:
+            print(v.ljust(20), "  :  ", info_dictionary[v])
         return
 
 
@@ -243,9 +238,6 @@ class InfoGraph:
         if self.has_fetching_info:
             self.fetching_info = {}
 
-        self.info_dictionary  = {}           # Dictionary of the views' dictionaries 
-
-
 
     def __str__(self):
         return f"InfoGrapf : {self.name}\n{self.comment}"
@@ -256,10 +248,6 @@ class InfoGraph:
 
     def set_comment(self, comment_text):     self.comment = comment_text
 
-    def get_info_dictionary(self):
-        self.update_info_dictionary()
-        return self.info_dictionary
-
     def activate(self, view_name):           self.views[view_name].set_active()
 
 
@@ -267,18 +255,20 @@ class InfoGraph:
     ################################################
     # Info dictionary 
 
-    def update_info_dictionary(self):
-        self.info_dictionary.clear()
-        self.info_dictionary['name']              = self.name
-        self.info_dictionary['comment']           = self.comment
-        self.info_dictionary['has_fetching_info'] = self.has_fetching_info
-        if self.has_fetching_info:
-            self.info_dictionary['fetching_info'] = self.fetching_info
+    def get_info_dictionary(self):
 
-        self.info_dictionary['views'] = {}
+        info_dictionary                      ={}
+        info_dictionary['name']              = self.name
+        info_dictionary['comment']           = self.comment
+        info_dictionary['has_fetching_info'] = self.has_fetching_info
+        if self.has_fetching_info:
+            info_dictionary['fetching_info'] = self.fetching_info
+
+        info_dictionary['views'] = {}
         for iv in self.views.values():
-            self.info_dictionary['views'][iv.view] = iv.get_info_dictionary()
-        return
+            info_dictionary['views'][iv.view] = iv.get_info_dictionary()
+
+        return info_dictionary
 
 
     def add_view_from_info(self, view_info):
@@ -289,18 +279,20 @@ class InfoGraph:
 
 
     ############### TBC : should copy.deepcopy() be used here ????????????????????????
-    def configure_from_info_dictionary(self, infoDict={}):
+    def configure_from_info_dictionary(self, info_dictionary={}):
 
-        d = infoDict if (len(infoDict) > 0) else  self.info_dictionary
+        if (len(info_dictionary) > 0):
+            print("ERROR: info_dictionary is empty!!! ")
+            return
 
-        self.name              = d['name']
-        self.comment           = d['comment']
-        self.has_fetching_info = d['has_fetching_info']
+        self.name              = info_dictionary['name']
+        self.comment           = info_dictionary['comment']
+        self.has_fetching_info = info_dictionary['has_fetching_info']
         if self.has_fetching_info:
-            self.fetching_info = d['fetching_info']
+            self.fetching_info = info_dictionary['fetching_info']
             
         self.views.clear()
-        for vd in d['views'].values():
+        for vd in info_dictionary['views'].values():
             self.add_view_from_info(vd)
 
         return
@@ -311,9 +303,11 @@ class InfoGraph:
     # Save & Load
 
     def saveGraph(self, fileName = "graph.json"):
-        self.update_info_dictionary()
+
+        info_dictionary = self.get_info_dictionary()
+
         with open(fileName, "w") as file:
-            json.dump(self.info_dictionary, file)
+            json.dump(info_dictionary, file)
         return
 
 
@@ -321,12 +315,12 @@ class InfoGraph:
     def loadGraphFromFile(self, fileName):
 
         print("Loading graph from file  ", fileName)
-        
-        self.info_dictionary.clear()
-        with open(fileName) as file:
-            self.info_dictionary = json.load(file)
 
-        self.configure_from_info_dictionary()
+        info_dictionary = {}
+        with open(fileName) as file:
+            info_dictionary = json.load(file)
+
+        self.configure_from_info_dictionary(info_dictionary)
 
         self.print_graph()
 
@@ -393,14 +387,6 @@ class InfoGraph:
 
     ################################################
     # Graph printing
-
-    #    def printGraph(self):
-    #        self.update_info_dictionary()
-    #        print(self.info_dictionary)
-    #
-    #    def printGraphJson(self):
-    #        self.saveGraph('_to_be_removed.json')
-    #        os.system('cat _to_be_removed.json | jq')
 
     # Json-stype printing
     def print_graph(self):
@@ -743,7 +729,7 @@ class InfoGraph:
     #
     def saveDotFile(self, dotName = "graph.dot"):
 
-        self.update_info_dictionary()
+        #        self.update_info_dictionary()
 
         dotFile = open(dotName, "w")
         dotFile.write('digraph {\n\n')
