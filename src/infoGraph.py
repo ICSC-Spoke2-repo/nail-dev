@@ -103,10 +103,10 @@ class InfoView:
         return
             
 
-
-    def get_info_dictionary(self):
-        self.update_info_dictionary()
-        return self.info_dictionary
+    # Defined below ...
+    #    def get_info_dictionary(self):
+    #        self.update_info_dictionary()
+    #        return self.info_dictionary
 
 
 
@@ -171,13 +171,13 @@ class InfoView:
     ################################################
     # Tests (is/has)
 
-    def is_active(self):            return (self.status == 'active')
+    def is_active(self):            return (self.status == 'active'   )
     def is_available(self):         return (self.status == 'available')
 
-    def has_origin(self):           return (len(self.origins) > 0)
-    def has_requirement(self):      return (len(self.requirements) > 0)
-    def has_transformation(self):   return (self.algorithm != "NONE")
-    def has_id_code(self):          return (self.id_code != 0)
+    def has_origin(self):           return (len(self.origins)      > 0      )
+    def has_requirement(self):      return (len(self.requirements) > 0      )
+    def has_transformation(self):   return (self.algorithm         != "NONE")
+    def has_id_code(self):          return (self.id_code           != 0     )
 
     def is_transformation(self):    return (    self.has_origin() and      self.has_transformation() )
     def is_aggregation(self):       return (    self.has_origin() and (not self.has_transformation()))

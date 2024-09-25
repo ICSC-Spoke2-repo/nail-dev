@@ -7,9 +7,15 @@ from interfaceDictionary import interfaceDictionary
 
 
 dictionaryFileName = "nanoAOD_PHYSLITE_id.json"
+dictionaryName     = "nanoAOD_PHYSLITE_test_interface"
+dictionaryComment  = "Test interface to run an analysis, described in nanoAOD format, on PHYSLITE format files."
 
-t = interfaceDictionary("nanoAOD_PHYSLITE_test_interface")
-t.set_comment("Test interface for nanoAOD->PHYSLITE format translation")
+
+#####################################################################
+
+
+t = interfaceDictionary(dictionaryName)
+t.set_comment(dictionaryComment)
 
 
 t.set_base_format("scalar",     "VARIABLE")
@@ -165,8 +171,8 @@ t.add_feature("Muon", "pfRelIso04_all", "topoetcone40")
 
 t.save_DB(dictionaryFileName)
 
-print("\n ---------------------------- print_dictionary ")
+print("\n ---------------------------- dictionary : ")
 t.print_dictionary()
 
-print("\n ---------------------------- print_summary ")
+print("\n ---------------------------- summary : ")
 t.print_summary()

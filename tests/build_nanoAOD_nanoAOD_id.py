@@ -5,11 +5,15 @@ from interfaceDictionary import interfaceDictionary
 
 #####################################################################
 
-
 dictionaryFileName = "nanoAOD_nanoAOD_id.json"
+dictionaryName     = "nanoAOD_nanoAOD_test_interface"
+dictionaryComment  = "Test interface for nanoAOD->nanoAOD format translation - equivalent to NO translation!"
 
-t = interfaceDictionary("nanoAOD_nanoAOD_test_interface")
-t.set_comment("Test interface for nanoAOD->nanoAOD format translation - equivalent to NO translation!")
+
+#####################################################################
+
+t = interfaceDictionary(dictionaryName)
+t.set_comment(dictionaryComment)
 
 
 t.set_base_format("scalar",     "VARIABLE")
@@ -153,8 +157,8 @@ t.add_variable("Jet_btag")
 
 t.save_DB(dictionaryFileName)
 
-print("\n ---------------------------- print_dictionary ")
+print("\n ---------------------------- dictionary : ")
 t.print_dictionary()
 
-print("\n ---------------------------- print_summary ")
+print("\n ---------------------------- summary : ")
 t.print_summary()

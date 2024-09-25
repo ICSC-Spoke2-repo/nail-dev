@@ -26,13 +26,15 @@ class ProcessorLoop:
         self.dag       = "NOT_SET"
         self.cpp_text  = ""
 
-        self.Types     = {}
-        self.fileTypes = {}
+
+        self.Types             = {}
+        self.fileTypes         = {}
 
         self.listOfRankedViews = []
         self.active_regions    = []
 
-        self.cs        = self.generate_code_snippets()
+        self.cs                = self.generate_code_snippets()
+
 
         self.getFileTypes()
 
@@ -131,7 +133,7 @@ class ProcessorLoop:
                     _fType = self.fileTypes[t_v]
                     _type  = _fType
                     
-                    # Map arrays and vectors to RVecs
+                    # Arrays and vectors are converted to RVecs
 
                     if _fType.startswith('array<'):
                         _type = _fType.replace('array<', 'ROOT::VecOps::RVec<', 1)
@@ -453,7 +455,6 @@ class ProcessorLoop:
         inputTxt += '");\n\n'
 
         inputTxt += '  TTreeReader reader(input_tree);\n\n'
-
         inputTxt += '  reader.Restart();\n\n'
 
         return inputTxt
@@ -523,7 +524,7 @@ class ProcessorLoop:
 
                     _rvType = 'TTreeReaderValue<'+_type+'>'
                     inputTxt += '  '+f"{_rvType :<30}"+' rv_'+_v.view+'(reader, "'+t_view+'");\n'
-                    
+
 
         inputTxt += '\n\n'
 
