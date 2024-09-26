@@ -49,8 +49,6 @@ class SampleProcessing:
         self.targetList = []
         self.AG         = InfoGraph(name+"_AG", has_fetching_info=False)
 
-        self.info_dictionary    = {}
-
         self.event_weights      = []   # list of event weight nodes
 
         self.histos1D           = {}   # dictionary structure { h_name : { 'region'   : region_name ,
@@ -81,36 +79,36 @@ class SampleProcessing:
     # Info dictionary 
     #####################################################
 
-    def update_info_dictionary(self, alternate_AG=""):
-        self.info_dictionary.clear()
-        self.info_dictionary['name']               = self.name
-        self.info_dictionary['type']               = str(type(self))
-        self.info_dictionary['targetList']         = self.targetList
-        self.info_dictionary['regions_dictionary'] = self.regions_dictionary
+    def get_info_dictionary(self, alternate_AG=""):
+
+        info_dictionary                       = {}
+
+        info_dictionary['name']               = self.name
+        info_dictionary['type']               = str(type(self))
+        info_dictionary['targetList']         = self.targetList
+        info_dictionary['regions_dictionary'] = self.regions_dictionary
 
         if alternate_AG == "":
-            self.info_dictionary['AG'] = self.AG.get_info_dictionary()
+            info_dictionary['AG'] = self.AG.get_info_dictionary()
         else:
-            self.info_dictionary['AG'] = alternate_AG.get_info_dictionary()
+            info_dictionary['AG'] = alternate_AG.get_info_dictionary()
 
-        self.info_dictionary['ID']     = self.ID.get_info_dictionary()
+        info_dictionary['ID']     = self.ID.get_info_dictionary()
+
+        return info_dictionary
+
+
+
+    def configure_from_info_dictionary(self, info_dictionary):
+        self.name                            = info_dictionary['name']
+        self.targetList                      = info_dictionary['targetList']
+        self.regions_dictionary              = info_dictionary['regions_dictionary']
+        self.AG.configure_from_info_dictionary(info_dictionary['AG'])
+        self.ID.configure_from_info_dictionary(info_dictionary['ID'])
         return
 
 
 
-    def configure_from_info_dictionary(self):
-        self.name                            = self.info_dictionary['name']
-        self.targetList                      = self.info_dictionary['targetList']
-        self.regions_dictionary              = self.info_dictionary['regions_dictionary']
-        self.AG.configure_from_info_dictionary(self.info_dictionary['AG'])
-        self.ID.configure_from_info_dictionary(self.info_dictionary['ID'])
-        return
-
-
-
-    def get_info_dictionary(self):
-        self.update_info_dictionary()
-        return self.info_dictionary
 
 
 
@@ -119,9 +117,11 @@ class SampleProcessing:
     #####################################################
 
     def saveFlowToFile(self, fileName = "flow.json", alternate_AG=""):
-        self.update_info_dictionary(alternate_AG)
+
+        info_dictionary = self.get_info_dictionary(alternate_AG)
+
         with open(fileName, "w") as file:
-            json.dump(self.info_dictionary, file)
+            json.dump(info_dictionary, file)
         return
 
 
@@ -130,11 +130,11 @@ class SampleProcessing:
 
         print("Loading flow from file  ", fileName)
 
-        self.info_dictionary.clear()
+        info_dictionary = {}
         with open(fileName) as file:
-            self.info_dictionary = json.load(file)
+            info_dictionary = json.load(file)
 
-        self.configure_from_info_dictionary()
+        self.configure_from_info_dictionary(info_dictionary)
 
         return
 

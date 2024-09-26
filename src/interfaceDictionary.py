@@ -75,8 +75,6 @@ class interfaceDictionary:
         self.typesWithIndex    = (                  self.vector_type,                   self.collection_type)
         self.typesWithFeature  = (                                    self.object_type, self.collection_type)
 
-        self.info_dictionary      = {}
-
         self.DB                   = {}
 
         self.DB["base_formats"]   = {}
@@ -107,8 +105,6 @@ class interfaceDictionary:
             self.name = interfaceName
 
 
-        self.update_info_dictionary()
-
         print(f"{'[ interfaceDictionary ] object created : ' : <45}{self.name}")
 
 
@@ -129,77 +125,74 @@ class interfaceDictionary:
     # info_dictionary 
 
     ###
-    def update_info_dictionary(self):
+    def get_info_dictionary(self):
 
-        self.info_dictionary.clear()
+        info_dictionary                     = {}
 
-        self.info_dictionary["info"]             = {}
-        self.info_dictionary["info"]["name"]     = self.name
-        self.info_dictionary["info"]["type"]     = str(type(self))
-        self.info_dictionary["info"]["comment"]  = self.comment
+        info_dictionary["info"]             = {}
+        info_dictionary["info"]["name"]     = self.name
+        info_dictionary["info"]["type"]     = str(type(self))
+        info_dictionary["info"]["comment"]  = self.comment
 
-        self.info_dictionary["VARIABLE_label"]   = self.VARIABLE_label
-        self.info_dictionary["FEATURE_label"]    = self.FEATURE_label
-        self.info_dictionary["INDEX_label"]      = self.INDEX_label
+        info_dictionary["VARIABLE_label"]   = self.VARIABLE_label
+        info_dictionary["FEATURE_label"]    = self.FEATURE_label
+        info_dictionary["INDEX_label"]      = self.INDEX_label
 
-        self.info_dictionary["CONSTANT_label"]   = self.CONSTANT_label
+        info_dictionary["CONSTANT_label"]   = self.CONSTANT_label
 
-        self.info_dictionary["scalar_type"]      = self.scalar_type
-        self.info_dictionary["vector_type"]      = self.vector_type
-        self.info_dictionary["object_type"]      = self.object_type
-        self.info_dictionary["collection_type"]  = self.collection_type
+        info_dictionary["scalar_type"]      = self.scalar_type
+        info_dictionary["vector_type"]      = self.vector_type
+        info_dictionary["object_type"]      = self.object_type
+        info_dictionary["collection_type"]  = self.collection_type
 
-        self.info_dictionary["types"]            = self.types
-        self.info_dictionary["typesWithIndex"]   = self.typesWithIndex
-        self.info_dictionary["typesWithFeature"] = self.typesWithFeature
+        info_dictionary["types"]            = self.types
+        info_dictionary["typesWithIndex"]   = self.typesWithIndex
+        info_dictionary["typesWithFeature"] = self.typesWithFeature
 
-        self.info_dictionary["DB"]               = self.DB
+        info_dictionary["DB"]               = self.DB
 
         print(f"{'[ interfaceDictionary ] info_dictionary updated'}")
-        print(self.info_dictionary, "\n")
+        print(info_dictionary, "\n")
 
-        return
+        return info_dictionary
             
 
     ###
-    def configure_from_info_dictionary(self, infoDict = {}):
+    def configure_from_info_dictionary(self, info_dictionary = {}):
 
-        id = infoDict if (len(infoDict) > 0) else self.info_dictionary
+        if (len(info_dictionary) == 0):
+            print("[ interfaceDictionary ]  ERROR: info_dictionary is empty!!! ")
+            return
 
-        self.name             = id["info"]["name"]
-        self.comment          = id["info"]["comment"]
+        self.name             = info_dictionary["info"]["name"]
+        self.comment          = info_dictionary["info"]["comment"]
 
-        self.VARIABLE_label   = id["VARIABLE_label"]
-        self.FEATURE_label    = id["FEATURE_label"]
-        self.INDEX_label      = id["INDEX_label"]
+        self.VARIABLE_label   = info_dictionary["VARIABLE_label"]
+        self.FEATURE_label    = info_dictionary["FEATURE_label"]
+        self.INDEX_label      = info_dictionary["INDEX_label"]
 
-        self.CONSTANT_label   = id["CONSTANT_label"]
+        self.CONSTANT_label   = info_dictionary["CONSTANT_label"]
 
-        self.scalar_type      = id["scalar_type"]
-        self.vector_type      = id["vector_type"]
-        self.object_type      = id["object_type"]
-        self.collection_type  = id["collection_type"]
+        self.scalar_type      = info_dictionary["scalar_type"]
+        self.vector_type      = info_dictionary["vector_type"]
+        self.object_type      = info_dictionary["object_type"]
+        self.collection_type  = info_dictionary["collection_type"]
 
-        self.types            = id["types"]
-        self.typesWithIndex   = id["typesWithIndex"]
-        self.typesWithFeature = id["typesWithFeature"]
+        self.types            = info_dictionary["types"]
+        self.typesWithIndex   = info_dictionary["typesWithIndex"]
+        self.typesWithFeature = info_dictionary["typesWithFeature"]
 
-        self.DB               = id["DB"]
+        self.DB               = info_dictionary["DB"]
 
         self.set_variable_feature_separator("base")
         self.set_variable_feature_separator("target")
         self.set_feature_index_order()
 
 
-        print(f"{'[ interfaceDictionary ] object configured from info_dictionary'}")
+        print(f"{'[ interfaceDictionary ] Object configured from info_dictionary'}")
 
         return
 
-
-    ###
-    def get_info_dictionary(self):
-        self.update_info_dictionary()
-        return self.info_dictionary
 
 
 
@@ -208,23 +201,25 @@ class interfaceDictionary:
 
     ###
     def save_DB(self, dbFileName):
-        self.update_info_dictionary()
+
+        info_dictionary = self.get_info_dictionary()
+
         with open(dbFileName, "w") as file:
-            json.dump(self.info_dictionary, file)
+            json.dump(info_dictionary, file)
         print(f"{'[ interfaceDictionary ] object saved to : ' : <45}{dbFileName}")
         return
 
 
     ###
     def load_DB(self, dbFileName):
-        self.info_dictionary.clear()
+        info_dictionary = {}
         with open(dbFileName) as file:
-            self.info_dictionary = json.load(file)
+            info_dictionary = json.load(file)
         print("** DB loaded from file ", dbFileName)
 
         print(f"{'[ interfaceDictionary ] info_dictionary loaded from : ' : <45}{dbFileName}")
         
-        self.configure_from_info_dictionary()
+        self.configure_from_info_dictionary(info_dictionary)
         
         self.print_summary()
 

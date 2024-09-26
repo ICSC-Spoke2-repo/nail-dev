@@ -89,7 +89,7 @@ class InfoView:
     def configure_from_info_dictionary(self, info_dictionary = {}):
 
         if (len(info_dictionary) == 0):
-            print("ERROR: info_dictionary is empty!!! ")
+            print("[ InfoView ]  ERROR: info_dictionary is empty!!! ")
             return
 
         self.view          = info_dictionary["view"]
@@ -123,7 +123,7 @@ class InfoView:
         info_dictionary = {}
         with open(dbFileName) as file:
             info_dictionary = json.load(file)
-        print("** View loaded from file ", dbFileName)
+        print("[ InfoView ]  View loaded from file :  ", dbFileName)
 
         self.configure_from_info_dictionary(info_dictionary)
         
@@ -281,8 +281,8 @@ class InfoGraph:
     ############### TBC : should copy.deepcopy() be used here ????????????????????????
     def configure_from_info_dictionary(self, info_dictionary={}):
 
-        if (len(info_dictionary) > 0):
-            print("ERROR: info_dictionary is empty!!! ")
+        if (len(info_dictionary) == 0):
+            print("[ InfoGraph ]  ERROR: info_dictionary is empty!!! ")
             return
 
         self.name              = info_dictionary['name']
@@ -324,7 +324,7 @@ class InfoGraph:
 
         self.print_graph()
 
-        print("Graph  ", self.name, "  loaded from file  ", fileName)
+        print("[ InfoGraph ]  Graph  ", self.name, "  loaded from file  ", fileName)
 
         return
 
