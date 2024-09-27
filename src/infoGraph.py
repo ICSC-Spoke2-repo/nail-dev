@@ -36,7 +36,7 @@ import copy
 #
 
 class InfoView:
-    def __init__(self, infoName = "NONE", has_fetching_info=True):
+    def __init__(self, infoName = "NONE"):
 
         self.view              = infoName
         self.algorithm         = 'NONE'
@@ -45,15 +45,7 @@ class InfoView:
         self.id_code           = 0
         self.status            = 'undefined'
 
-        self.has_fetching_info = has_fetching_info
-
-        if self.has_fetching_info:
-            self.fetching_info                  = {}
-            self.fetching_info['file_location'] = 'LOCAL'
-            self.fetching_info['file_path']     = './'
-            self.fetching_info['extra_path']    = ''
-            self.fetching_info['file_id_code']  = '0'
-            self.fetching_info['file_id_type']  = 'NONE'
+        self.fetching_info     = {}
 
 
 
@@ -80,8 +72,7 @@ class InfoView:
         info_dictionary["status"]            = self.status
         info_dictionary["id_code"]           = self.id_code
 
-        if self.has_fetching_info:
-            info_dictionary["fetching_info"] = self.fetching_info
+        info_dictionary["fetching_info"]     = copy.deepcopy(self.fetching_info)
 
         return info_dictionary
 
@@ -94,15 +85,12 @@ class InfoView:
 
         self.view          = info_dictionary["view"]
         self.algorithm     = info_dictionary["algorithm"]
-        self.origins       = info_dictionary["origins"]
-        self.requirements  = info_dictionary["requirements"]
+        self.origins       = copy.deepcopy(info_dictionary["origins"])
+        self.requirements  = copy.deepcopy(info_dictionary["requirements"])
         self.status        = info_dictionary["status"]
         self.id_code       = info_dictionary["id_code"]
 
-        self.has_fetching_info = False
-        if "fetching_info" in info_dictionary:
-            self.has_fetching_info = True
-            self.fetching_info     = info_dictionary["fetching_info"]
+        self.fetching_info = copy.deepcopy(info_dictionary["fetching_info"])
 
         return
             
@@ -131,22 +119,6 @@ class InfoView:
 
         return
 
-
-
-    #    # TBC: copy should be by value, not by reference
-    #    def copy_view_info(self, _v):
-    #        self.view             = _v.view
-    #        self.id_code          = _v.id_code
-    #        self.status           = _v.status
-    #
-    #        if self.has_fetching_info:
-    #            self.fetching_info['file_location'] = _v.fetching_info['file_location']
-    #            self.fetching_info['file_path']     = _v.fetching_info['file_path']    
-    #            self.fetching_info['extra_path']    = _v.fetching_info['extra_path']   
-    #            self.fetching_info['file_id_code']  = _v.fetching_info['file_id_code'] 
-    #            self.fetching_info['file_id_type']  = _v.fetching_info['file_id_type'] 
-    #
-    #        self.update_info_dictionary()
 
 
     ################################################
@@ -178,6 +150,8 @@ class InfoView:
     def has_transformation(self):   return (self.algorithm         != "NONE")
     def has_id_code(self):          return (self.id_code           != 0     )
 
+    def has_fetching_info(self):    return (len(self.fetching_info) > 0)
+
     def is_transformation(self):    return (    self.has_origin() and      self.has_transformation() )
     def is_aggregation(self):       return (    self.has_origin() and (not self.has_transformation()))
     def is_input(self):             return (not self.has_origin() )
@@ -197,7 +171,7 @@ class InfoView:
     # Tools for printing
 
     def print_view(self):
-        info_dictionary = get_info_dictionary()
+        info_dictionary = self.get_info_dictionary()
         print(info_dictionary)
         for v in info_dictionary:
             print(v.ljust(20), "  :  ", info_dictionary[v])
@@ -227,16 +201,13 @@ class InfoView:
 #
 
 class InfoGraph:
-    def __init__(self, graph_name = "NONE", has_fetching_info=True):
+    def __init__(self, graph_name = "NONE"):
 
-        self.name    = graph_name
-        self.comment = ""
-        self.views   = {}           # Dictionary of the views
+        self.name          = graph_name
+        self.comment       = ""
+        self.views         = {}           # Dictionary of the views
 
-        self.has_fetching_info = has_fetching_info
-
-        if self.has_fetching_info:
-            self.fetching_info = {}
+        self.fetching_info = {}
 
 
     def __str__(self):
@@ -260,9 +231,8 @@ class InfoGraph:
         info_dictionary                      ={}
         info_dictionary['name']              = self.name
         info_dictionary['comment']           = self.comment
-        info_dictionary['has_fetching_info'] = self.has_fetching_info
-        if self.has_fetching_info:
-            info_dictionary['fetching_info'] = self.fetching_info
+
+        info_dictionary['fetching_info']     = self.fetching_info
 
         info_dictionary['views'] = {}
         for iv in self.views.values():
@@ -287,10 +257,9 @@ class InfoGraph:
 
         self.name              = info_dictionary['name']
         self.comment           = info_dictionary['comment']
-        self.has_fetching_info = info_dictionary['has_fetching_info']
-        if self.has_fetching_info:
-            self.fetching_info = info_dictionary['fetching_info']
-            
+
+        self.fetching_info     = copy.deepcopy(info_dictionary['fetching_info'])
+
         self.views.clear()
         for vd in info_dictionary['views'].values():
             self.add_view_from_info(vd)
@@ -358,8 +327,11 @@ class InfoGraph:
 
 
     # Build the view and add it to the graph
+    #
+    # TBC : how fetching info are handled?????
+    #
     def addNode(self, view_name, origins_list=[], algorithm_name='NONE', requirements_list=[], id_code="", status=""):
-        _obj = InfoView(view_name, self.has_fetching_info)
+        _obj = InfoView(view_name)
         _obj.add_origins(origins_list)
         _obj.add_requirements(requirements_list)
         _obj.set_algorithm(algorithm_name)
@@ -539,8 +511,10 @@ class InfoGraph:
 
             digest_tool.update(iv.view.encode())
 
-            # Fetching info - in particulat for input files this might protect against unaccounted change in file content (eventually to be run on multiple input files - if this would be the case ...
-            if iv.has_fetching_info:
+            # Fetching info - in particulat for input files this might protect against
+            #                 unaccounted change in file content (eventually to be run on
+            #                 multiple input files - if this would be the case ...)
+            if iv.has_fetching_info():
                 for fv in iv.fetching_info.values():
                     digest_tool.update(fv.encode())
 
@@ -611,7 +585,7 @@ class InfoGraph:
 
     # This method supports the extraction of a sub-graph to multiple endpoints - the target's names must be passed as a list (also in case of a single target) 
     def subGraphTo(self, view_names = [], subGraph_name = "UPSTREAM", active_only = False):
-        g1 = InfoGraph(subGraph_name, has_fetching_info=self.has_fetching_info)
+        g1 = InfoGraph(subGraph_name)
 
         for view_name in view_names:
             if view_name in self.views:
@@ -641,7 +615,7 @@ class InfoGraph:
 
     # This method supports the extraction of a sub-graph from multiple start-points - the sources' names must be passed as a list (also in case of a single target) 
     def subGraphFrom(self, view_names = [], _graph_name = "DOWNSTREAM"):
-        g1 = InfoGraph(_graph_name, has_fetching_info=self.has_fetching_info)
+        g1 = InfoGraph(_graph_name)
 
         for view_name in view_names:
             if view_name in self.views:
@@ -682,38 +656,62 @@ class InfoGraph:
     ################################################
     # Endpoints and tasks
 
-    # This should probably be superseeded by list_of_output_nodes()
-    def find_endpoints(self):
-        endpoint_views = []
-        for v_a in self.views:
-            v_a_endpoint = True
-            for v_b in self.views:
-                if v_a in self.views[v_b].get_sources():
-                    v_a_endpoint = False
-                    break
-            if v_a_endpoint:
-                endpoint_views.append(v_a)
-        print("Endpoints : ", endpoint_views)
-        return endpoint_views
+    #    # This should probably be superseeded by list_of_output_nodes()
+    #    def find_endpoints(self):
+    #        endpoint_views = []
+    #        for v_a in self.views:
+    #            v_a_endpoint = True
+    #            for v_b in self.views:
+    #                if v_a in self.views[v_b].get_sources():
+    #                    v_a_endpoint = False
+    #                    break
+    #            if v_a_endpoint:
+    #                endpoint_views.append(v_a)
+    #        print("Endpoints : ", endpoint_views)
+    #        return endpoint_views
+    #
+    #
+    #    def find_tasks(self, v, lv):
+    #        if v.is_active():
+    #            for o_i in v.get_sources():   self.find_tasks(self.views[o_i], lv)
+    #            if not v in lv:               lv.append(v)
+    #        return
+    #
+    #
+    #    def print_tasks(self):
+    #        endpoint_views = self.find_endpoints()
+    #        tasks = []
+    #        for ve in endpoint_views:
+    #            self.find_tasks(self.views[ve], tasks)
+    #
+    #        print("--- List of tasks for graph ", self.name)
+    #        for t_i in tasks:
+    #            if not t_i.is_input():  print("--- Task : ", t_i)
+    #            #            if t_i.is_transformation():  print("--- Task : ", t_i)
+    #
+    #        return
 
 
-    def find_tasks(self, v, lv):
+
+    def list_tasks_for(self, v):
+        lv = []
         if v.is_active():
-            for o_i in v.get_sources():   self.find_tasks(self.views[o_i], lv)
-            if not v in lv:               lv.append(v)
-        return
+            for o_i in v.get_sources():
+                lv.append(self.list_tasks_for(self.views[o_i]))
+            if not v in lv:
+                lv.append(v)
+        return lv
 
 
     def print_tasks(self):
-        endpoint_views = self.find_endpoints()
+        endpoint_views = self.list_of_output_nodes()
         tasks = []
         for ve in endpoint_views:
-            self.find_tasks(self.views[ve], tasks)
+            tasks.append(self.list_tasks_for(self.views[ve]))
 
         print("--- List of tasks for graph ", self.name)
         for t_i in tasks:
             if not t_i.is_input():  print("--- Task : ", t_i)
-            #            if t_i.is_transformation():  print("--- Task : ", t_i)
 
         return
 
@@ -895,17 +893,17 @@ class InfoGraph:
             is_endpoint    = self.isNodeEndpoint(iv.view)
             self.addDotNode(dot, iv, is_requirement, is_endpoint)
 
-#            if iv.is_aggregation():
-#
-#                with dot.subgraph(name="cluster_"+iv.view) as c1:
-#                    b_list = ['label = "'+iv.view+'"']
-#                    for io in iv.origins:
-#                        b_list.append(io);
-#
-#                    c1.body=b_list
-#                    
-#            else:
-#                self.addDotNode(dot, iv)
+            #            if iv.is_aggregation():
+            #
+            #                with dot.subgraph(name="cluster_"+iv.view) as c1:
+            #                    b_list = ['label = "'+iv.view+'"']
+            #                    for io in iv.origins:
+            #                        b_list.append(io);
+            #
+            #                    c1.body=b_list
+            #                    
+            #            else:
+            #                self.addDotNode(dot, iv)
 
         
 
@@ -1017,8 +1015,7 @@ class ViewDB:
         self.db[view_id_code]['fetch_info'] = view_fetching_info
 
     def add_view(self, view):
-        if view.has_fetching_info:     self.add_entry(view.view, view.id_code, view.fetching_info)
-        else:                          self.add_entry(view.view, view.id_code)
+        self.add_entry(view.view, view.id_code, view.fetching_info)
         return
 
     def has_id(self, id_test):

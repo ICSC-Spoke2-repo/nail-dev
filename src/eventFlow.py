@@ -47,7 +47,7 @@ class SampleProcessing:
 
         self.name       = name
         self.targetList = []
-        self.AG         = InfoGraph(name+"_AG", has_fetching_info=False)
+        self.AG         = InfoGraph(name+"_AG")
 
         self.event_weights      = []   # list of event weight nodes
 
@@ -142,6 +142,9 @@ class SampleProcessing:
 
 
 
+    #####################################################
+    # Tools
+    #####################################################
 
     def is_object_like_call(self, varString):
 
@@ -355,9 +358,9 @@ class SampleProcessing:
         print("\n\n 77777777777777777777777777777777777777777777777 TRANSLATION \n\n")
 
 
-        t_Graph = InfoGraph(o_Graph.name+"_translated", has_fetching_info=o_Graph.has_fetching_info)
+        t_Graph = InfoGraph(o_Graph.name+"_translated")
 
-        # The feature has_fetching_info is propagated to the views from its value for the graph
+        # The handling of fetching_info is TBC !!!
         
         for o_view in o_Graph.views.values():
 
@@ -367,7 +370,8 @@ class SampleProcessing:
             t_view_requirements      = [self.ID.translate_string(_r) for _r in o_view.requirements]
             t_view_id_code           = copy.deepcopy(o_view.id_code)
             t_view_status            = copy.deepcopy(o_view.status)
-            #            t_view_has_fetching_info = copy.deepcopy(o_view.has_fetching_info)
+
+            #            t_view_fetching_info     = copy.deepcopy(o_view.fetching_info)
 
             t_Graph.addNode(t_view_name, t_view_origins, t_view_algorithm, t_view_requirements, t_view_id_code, t_view_status)
 
