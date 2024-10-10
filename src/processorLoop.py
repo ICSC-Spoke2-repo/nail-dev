@@ -3,6 +3,7 @@ from interfaceDictionary import interfaceDictionary
 from eventFlow import SampleProcessing
 import ROOT
 from ROOT import TFile
+from ROOT import TFile
 import os
 
 
@@ -85,6 +86,11 @@ class ProcessorLoop:
 
 
         print("\n@@  getFileTypes  @@@@@@@@@@@@@@@@@@@@@@@@@")
+
+        print("  -- Muon_pfRelIso04_all --  ", self.fileTypes['Muon_pfRelIso04_all'])
+
+        print("\n@@  getFileTypes  @@@@@@@@@@@@@@@@@@@@@@@@@")
+
         for l in self.fileTypes:
 
             s_l   = self.flow.ID.target2source(l) 
@@ -127,7 +133,11 @@ class ProcessorLoop:
 
             t_v = self.flow.ID.translate_string(v)
 
+            print("CHECKING : ", v, "  -->  ", t_v)
+
             if t_v in self.fileTypes:
+
+                print("FOUND    : ", v, "  -->  ", t_v)
 
                 if self.flow.has_index(v):
                     _fType = self.fileTypes[t_v]
@@ -141,11 +151,11 @@ class ProcessorLoop:
                     if _fType.startswith('vector<'):
                         _type = _fType.replace('vector<', 'ROOT::VecOps::RVec<', 1)
 
-                    self.Types[v] = _type
+                    self.Types[v] = str(_type)
 
 
                 else:
-                    self.Types[v] = self.fileTypes[v]
+                    self.Types[v] = str(self.fileTypes[v])
 
 
         # Update list of ranked nodes
@@ -398,8 +408,10 @@ class ProcessorLoop:
 
             f_type = self.returnType(f_name, fCode)
 
-            self.Types[view_name] = f_type
-            self.Types[f_name]    = f_type
+            #            self.Types[view_name] = f_type
+            #            self.Types[f_name]    = f_type
+            self.Types[view_name] = str(f_type)
+            self.Types[f_name]    = str(f_type)
 
         else:
 
@@ -538,7 +550,7 @@ class ProcessorLoop:
             if ((not self.flow.is_view_H1D(_v)) and (not _v.is_constant())):
 
                 inputTxt += '  '+f"{self.Types[_v.view] :<30}"+' '+_v.view+';\n'
-                    
+
         inputTxt += '\n\n'
 
 
@@ -730,10 +742,46 @@ class ProcessorLoop:
 
 
 
+    #######################################################################################
+    #
+    def RunProcessor(self, cpp_file_name="eventProcessor_Loop.cxx"):
+
+        so_file_name            = cpp_file_name.replace('.cxx', '.so')
+        lib_file_name           = 'lib_'+so_file_name
+
+
+        ROOT.gSystem.Load("lib_eventProcessor_Loop.so")
+
+        ROOT.gInterpreter.Declare("Result event_processorLoop();")
 
 
 
+        _result = ROOT.event_processorLoop()
 
+        print("-------------- STEP 7 ")
+
+        print(" result = ", _result)
+
+        print("-------------- STEP 8 ")
+
+
+        cc = ROOT.TCanvas()
+
+        with TFile.Open("f.root", "recreate") as rootFile:
+
+            for _n,_h in _result.histos:
+
+                print(" name =  ", _n)
+
+                print(" histo   ", _n, "  ->  ",_h)
+        
+                rootFile.WriteObject(_h, str(_n))
+
+                _h.Draw()
+                cc.SaveAs("out-%s.png" % (_n))
+
+
+        return
 
 
 

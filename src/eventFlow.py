@@ -199,6 +199,9 @@ class SampleProcessing:
         self.AG.addNode(name, inputList, code, requirements_list=requires)
         print(f"{'[SP] Define        : '}{name : <37}{' inputs '}{inputList}")
 
+
+        ## PROBLEM HERE FOR TRANSLATION .....
+
         self.ID.add_variable(name)
 
         return
@@ -353,6 +356,12 @@ class SampleProcessing:
     # DAG TRANSLATION
     #####################################################
 
+    def translate_string(self, string_to_translate):
+        return self.ID.translate_string(string_to_translate)
+
+
+
+
     def TranslateGraph(self, o_Graph):
 
         print("\n\n 77777777777777777777777777777777777777777777777 TRANSLATION \n\n")
@@ -370,10 +379,11 @@ class SampleProcessing:
             t_view_requirements      = [self.ID.translate_string(_r) for _r in o_view.requirements]
             t_view_id_code           = copy.deepcopy(o_view.id_code)
             t_view_status            = copy.deepcopy(o_view.status)
-
+            
             #            t_view_fetching_info     = copy.deepcopy(o_view.fetching_info)
-
+            
             t_Graph.addNode(t_view_name, t_view_origins, t_view_algorithm, t_view_requirements, t_view_id_code, t_view_status)
+
 
         return t_Graph
 

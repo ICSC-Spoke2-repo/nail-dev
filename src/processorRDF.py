@@ -51,19 +51,13 @@ class Processor_RDF:
 
         for x in _rdf.GetColumnNames():
             v_n = str(x)
-            #            if v_n in self.dag.views:
-            vs = self.flow.ID.target2source(v_n)
+            vs  = self.flow.ID.target2source(v_n)
             if self.flow.ID.is_defined(vs):
-#                self.fileTypes[v_n] = _rdf.GetColumnType(v_n)
                 self.fileTypes[vs] = _rdf.GetColumnType(v_n)
 
                 print("v_n =", v_n, "   ", self.fileTypes[vs])
                 print("vs  =", vs)
                 
-
-            #        for n in self.fileTypes:
-            #            print(f"{n :<30}{'  ->  '}{self.fileTypes[n]}")
-        
         del _rdf
 
         return
@@ -255,7 +249,8 @@ class Processor_RDF:
                         for i in _view.origins:
                             _iv = self.dag.views[i]
                             if (_iv.is_input() and not _iv.is_constant()):
-                                _o_names.append(self.flow.ID.translate_string(i))
+                                #_o_names.append(self.flow.ID.translate_string(i))
+                                _o_names.append(self.flow.translate_string(i))
                             else:
                                 _o_names.append(i)
                         
