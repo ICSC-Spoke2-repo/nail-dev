@@ -85,12 +85,6 @@ class ProcessorLoop:
         _file.Close()
 
 
-        print("\n@@  getFileTypes  @@@@@@@@@@@@@@@@@@@@@@@@@")
-
-        print("  -- Muon_pfRelIso04_all --  ", self.fileTypes['Muon_pfRelIso04_all'])
-
-        print("\n@@  getFileTypes  @@@@@@@@@@@@@@@@@@@@@@@@@")
-
         for l in self.fileTypes:
 
             s_l   = self.flow.ID.target2source(l) 
