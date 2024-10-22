@@ -4,6 +4,7 @@ from eventFlow import SampleProcessing
 import ROOT
 from ROOT import TFile
 import os
+import time
 
 
 #######################################################################################
@@ -500,7 +501,8 @@ class Processor_RDF:
         ROOT.gInterpreter.Declare('Result eventProcessor_nail(RNode rdf, int nThreads);')
 
         ### The attribute retrieved here allows the configuration of the rdf (passed as argument) as the Processor defined
-        processor_function = (lambda rdf: getattr(ROOT, "eventProcessor_nail")(ROOT.RDF.AsRNode(rdf), 0))
+#        processor_function = (lambda rdf: getattr(ROOT, "eventProcessor_nail")(ROOT.RDF.AsRNode(rdf), 0))
+        processor_function = (lambda rdf: getattr(ROOT, "eventProcessor_nail")(ROOT.RDF.AsRNode(rdf), 8))
 
         return processor_function
 
@@ -511,10 +513,16 @@ class Processor_RDF:
     #
     def RunProcessor(self, translate=False):
 
+        _t_1 = time.time()
+
         ### NOT ELEGANT - TO BE FIXED
         self.GenerateRDFcpp(translate=translate)
 
         self.Compile_cpp_file()
+
+        _t_2 = time.time()
+
+        ROOT.EnableImplicitMT(8)
 
         _processor = self.GetProcessor()
 
@@ -533,6 +541,8 @@ class Processor_RDF:
 
         cc = ROOT.TCanvas()
 
+        stop_timer = True
+
         with TFile.Open("f.root", "recreate") as rootFile:
 
             for o in _result.histos:
@@ -540,10 +550,23 @@ class Processor_RDF:
                 print(" histo   ", o.GetName(), "  ->  ", o)
 
                 rootFile.WriteObject(o.GetValue(), o.GetName())
-                
+
                 o.Draw()
+
+                if stop_timer:
+                    _t_3 = time.time()
+                    stop_timer = False
+
                 cc.SaveAs("out-%s.png" % (o.GetName()))
 
+
+        t_compile         = (_t_2 - _t_1)
+        t_declare_and_run = (_t_3 - _t_2)
+
+        print("\n ================================== TIMING == \n")
+        print(" t_compile         =  ", t_compile)
+        print(" t_declare_and_run =  ", t_declare_and_run)
+        print("\n ============================================ \n")
 
         return
 

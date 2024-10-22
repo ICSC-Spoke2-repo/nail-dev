@@ -200,8 +200,6 @@ class SampleProcessing:
         print(f"{'[SP] Define        : '}{name : <37}{' inputs '}{inputList}")
 
 
-        ## PROBLEM HERE FOR TRANSLATION .....
-
         self.ID.add_variable(name)
 
         return
