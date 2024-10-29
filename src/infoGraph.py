@@ -30,10 +30,11 @@ import copy
 #  Transformation  |     Y     |    Y    |    Y/N          |
 #  Aggregation     |     N     |    Y    |     ? (tbc ...) |
 #  Constant        |     Y     |    N    |     -           | (Algorithm is returning the value of the constant)
-#  Input           |    Y/N    |    N    |     -           | (A Constant is - of course - an Input as well)
+#  Input Variable  |     N     |    N    |     ?           |
+#  Input           |    Y/N    |    N    |     -           | (A Constant is - of course - an Input as well) - = Constant OR Input Variable
 # --------------------------------------------------------------------------------------------------------------
 #
-#
+###############################################################################
 
 class InfoView:
     def __init__(self, infoName = "NONE"):
@@ -44,7 +45,6 @@ class InfoView:
         self.requirements      = []
         self.id_code           = 0
         self.status            = 'undefined'
-
         self.fetching_info     = {}
 
 
@@ -55,8 +55,8 @@ class InfoView:
 
     ################################################
     # info_dictionary -> is NOW a transient variable!!
-
-    # Note if the statements inside update_info() are kept in the __init__(),
+    #
+    # Outdated note (update_info not defined anymore!): if the statements inside update_info() are kept in the __init__(),
     # any assignment to self.algorithm is *NOT* propagated to the dictionary, since
     # the variable referenced by self.algorithm is changed (i.e. a new one is instantiated
     # and the old one "NONE" remains alive since it is referenced by self.info_dictionary["algorithm"]
@@ -64,15 +64,14 @@ class InfoView:
 
     def get_info_dictionary(self):
 
-        info_dictionary                      = {}
-        info_dictionary["view"]              = self.view
-        info_dictionary["algorithm"]         = self.algorithm
-        info_dictionary["origins"]           = self.origins
-        info_dictionary["requirements"]      = self.requirements
-        info_dictionary["status"]            = self.status
-        info_dictionary["id_code"]           = self.id_code
-
-        info_dictionary["fetching_info"]     = copy.deepcopy(self.fetching_info)
+        info_dictionary                  = {}
+        info_dictionary["view"]          = copy.deepcopy( self.view          )
+        info_dictionary["algorithm"]     = copy.deepcopy( self.algorithm     )
+        info_dictionary["origins"]       = copy.deepcopy( self.origins       )
+        info_dictionary["requirements"]  = copy.deepcopy( self.requirements  )
+        info_dictionary["status"]        = copy.deepcopy( self.status        )
+        info_dictionary["id_code"]       = copy.deepcopy( self.id_code       )
+        info_dictionary["fetching_info"] = copy.deepcopy( self.fetching_info )
 
         return info_dictionary
 
@@ -83,14 +82,13 @@ class InfoView:
             print("[ InfoView ]  ERROR: info_dictionary is empty!!! ")
             return
 
-        self.view          = info_dictionary["view"]
-        self.algorithm     = info_dictionary["algorithm"]
-        self.origins       = copy.deepcopy(info_dictionary["origins"])
-        self.requirements  = copy.deepcopy(info_dictionary["requirements"])
-        self.status        = info_dictionary["status"]
-        self.id_code       = info_dictionary["id_code"]
-
-        self.fetching_info = copy.deepcopy(info_dictionary["fetching_info"])
+        self.view          = copy.deepcopy( info_dictionary["view"]          )
+        self.algorithm     = copy.deepcopy( info_dictionary["algorithm"]     )
+        self.origins       = copy.deepcopy( info_dictionary["origins"]       )
+        self.requirements  = copy.deepcopy( info_dictionary["requirements"]  )
+        self.status        = copy.deepcopy( info_dictionary["status"]        )
+        self.id_code       = copy.deepcopy( info_dictionary["id_code"]       )
+        self.fetching_info = copy.deepcopy( info_dictionary["fetching_info"] )
 
         return
             
@@ -111,10 +109,11 @@ class InfoView:
         info_dictionary = {}
         with open(dbFileName) as file:
             info_dictionary = json.load(file)
-        print("[ InfoView ]  View loaded from file :  ", dbFileName)
 
         self.configure_from_info_dictionary(info_dictionary)
-        
+
+        print("[ InfoView ]  View loaded from file :  ", dbFileName)
+
         self.print_view()
 
         return
@@ -124,39 +123,40 @@ class InfoView:
     ################################################
     # Building tools
 
-    def add_origin(self, iv):                          self.origins.append(iv.view)
+    def add_origin( self, iv):                         self.origins.append(iv.view)
     def add_origins(self, _origins_list):              self.origins.extend(_origins_list)
 
-    def add_requirement(self, iv):                     self.requirements.append(iv.view)
+    def add_requirement( self, iv):                    self.requirements.append(iv.view)
     def add_requirements(self, _requirements_list):    self.requirements.extend(_requirements_list)
 
 
-    def set_algorithm(self, _algoName):       self.algorithm   = _algoName
-    def set_id_code(self,   _code):           self.id_code     = _code
-    def set_status(self,    _status):         self.status      = _status
+    def set_algorithm(self, _algoName):                self.algorithm = _algoName
+    def set_id_code(  self, _code):                    self.id_code   = _code
+    def set_status(   self, _status):                  self.status    = _status
 
-    def set_active(self):                     self.set_status('active')
-    def set_available(self):                  self.set_status('available')
+    def set_active(   self):                           self.set_status('active')
+    def set_available(self):                           self.set_status('available')
 
 
     ################################################
     # Tests (is/has)
 
-    def is_active(self):            return (self.status == 'active'   )
-    def is_available(self):         return (self.status == 'available')
+    def is_active(self):            return ( self.status == 'active'    )
+    def is_available(self):         return ( self.status == 'available' )
 
-    def has_origin(self):           return (len(self.origins)      > 0      )
-    def has_requirement(self):      return (len(self.requirements) > 0      )
-    def has_transformation(self):   return (self.algorithm         != "NONE")
-    def has_id_code(self):          return (self.id_code           != 0     )
+    def has_origin(self):           return ( len(self.origins)      > 0       )
+    def has_requirement(self):      return ( len(self.requirements) > 0       )
+    def has_transformation(self):   return ( self.algorithm         != "NONE" )
+    def has_id_code(self):          return ( self.id_code           != 0      )
 
-    def has_fetching_info(self):    return (len(self.fetching_info) > 0)
+    def has_fetching_info(self):    return ( len(self.fetching_info) > 0 )
 
-    def is_transformation(self):    return (    self.has_origin() and      self.has_transformation() )
-    def is_aggregation(self):       return (    self.has_origin() and (not self.has_transformation()))
-    def is_input(self):             return (not self.has_origin() )
-    def is_constant(self):          return (not self.has_origin() and      self.has_transformation() )   # A constant is - of course - an input as well
+    def is_transformation(self):    return (      self.has_transformation()  and      self.has_origin()  )
+    def is_aggregation(self):       return ( (not self.has_transformation()) and      self.has_origin()  )
+    def is_constant(self):          return (      self.has_transformation()  and (not self.has_origin()) )   # A constant is - of course - an input as well
+    def is_input_variable(self):    return ( (not self.has_transformation()) and (not self.has_origin()) )
 
+    def is_input(self):             return ( self.is_constant() or self.is_input_variable() )
 
 
     ################################################
@@ -656,43 +656,6 @@ class InfoGraph:
     ################################################
     # Endpoints and tasks
 
-    #    # This should probably be superseeded by list_of_output_nodes()
-    #    def find_endpoints(self):
-    #        endpoint_views = []
-    #        for v_a in self.views:
-    #            v_a_endpoint = True
-    #            for v_b in self.views:
-    #                if v_a in self.views[v_b].get_sources():
-    #                    v_a_endpoint = False
-    #                    break
-    #            if v_a_endpoint:
-    #                endpoint_views.append(v_a)
-    #        print("Endpoints : ", endpoint_views)
-    #        return endpoint_views
-    #
-    #
-    #    def find_tasks(self, v, lv):
-    #        if v.is_active():
-    #            for o_i in v.get_sources():   self.find_tasks(self.views[o_i], lv)
-    #            if not v in lv:               lv.append(v)
-    #        return
-    #
-    #
-    #    def print_tasks(self):
-    #        endpoint_views = self.find_endpoints()
-    #        tasks = []
-    #        for ve in endpoint_views:
-    #            self.find_tasks(self.views[ve], tasks)
-    #
-    #        print("--- List of tasks for graph ", self.name)
-    #        for t_i in tasks:
-    #            if not t_i.is_input():  print("--- Task : ", t_i)
-    #            #            if t_i.is_transformation():  print("--- Task : ", t_i)
-    #
-    #        return
-
-
-
     def list_tasks_for(self, v):
         lv = []
         if v.is_active():
@@ -726,8 +689,6 @@ class InfoGraph:
     # - does implement a basic version of the aligned ranking feature
     #
     def saveDotFile(self, dotName = "graph.dot"):
-
-        #        self.update_info_dictionary()
 
         dotFile = open(dotName, "w")
         dotFile.write('digraph {\n\n')
@@ -821,7 +782,12 @@ class InfoGraph:
     # - Aggregations TO BE CHECKED
     #
 
-    def addDotNode(self, dot_obj, _view, is_requirement = False, is_endpoint = False):
+    #    def addDotNode(self, dot_obj, _view, is_requirement = False, is_endpoint = False):
+    def addDotNode(self, dot_obj, _view):
+
+        is_requirement = self.isNodeRequirement(_view.view)
+        is_endpoint    = self.isNodeEndpoint(_view.view)
+
         t_style = v_style = ''
         t_fill  = v_fill  = ''
 
@@ -849,7 +815,6 @@ class InfoGraph:
         if _view.is_aggregation():
             dot_obj.node(_view.view, _view.view, shape='oval', penwidth='3.0', style=v_style, fillcolor=v_fill)
         else:
-            #            if _view.has_requirement():
             if is_requirement:
                 dot_obj.node(_view.view, _view.view, shape='circle', penwidth='3.0', style=v_style, fillcolor=v_fill)
             else:
@@ -889,10 +854,12 @@ class InfoGraph:
         # . Views and Transformation
         for iv in self.views.values():
 
-            is_requirement = self.isNodeRequirement(iv.view)
-            is_endpoint    = self.isNodeEndpoint(iv.view)
-            self.addDotNode(dot, iv, is_requirement, is_endpoint)
+            #            is_requirement = self.isNodeRequirement(iv.view)
+            #            is_endpoint    = self.isNodeEndpoint(iv.view)
+            #            self.addDotNode(dot, iv, is_requirement, is_endpoint)
 
+            self.addDotNode(dot, iv)
+            
             #            if iv.is_aggregation():
             #
             #                with dot.subgraph(name="cluster_"+iv.view) as c1:
